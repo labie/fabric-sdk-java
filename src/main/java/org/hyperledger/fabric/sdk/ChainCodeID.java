@@ -5,21 +5,21 @@ import org.hyperledger.fabric.protos.peer.Chaincode;
 
 /**
  * Wrapper to not expose Fabric's ChainCoodeId
-
  */
 public class ChainCodeID {
 
-     Chaincode.ChaincodeID getFabricChainCodeID() {
+    Chaincode.ChaincodeID getFabricChainCodeID() {
         return fabricChainCodeID;
     }
 
     final Chaincode.ChaincodeID fabricChainCodeID;
 
-     ChainCodeID(Chaincode.ChaincodeID chaincodeID) {
+    public ChainCodeID(Chaincode.ChaincodeID chaincodeID) {
         this.fabricChainCodeID = chaincodeID;
     }
+
     @Deprecated
-    public String getName(){
+    public String getName() {
         return fabricChainCodeID.getName();
     }
 
