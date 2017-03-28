@@ -22,10 +22,13 @@ import org.hyperledger.fabric.sdk.helper.SDKUtil;
 import org.hyperledger.fabric.protos.peer.FabricProposal;
 import org.hyperledger.fabric.protos.peer.FabricProposalResponse;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
  * The Peer class represents a peer to which SDK sends deploy, or query requests.
  */
-public class Peer {
+public class Peer implements Closeable{
     private static final Log logger = LogFactory.getLog(Peer.class);
     private final EndorserClient endorserClent;
     private String name = null;
@@ -84,8 +87,6 @@ public class Peer {
 
         }
         this.url = url;
-
-
 
         this.endorserClent = new EndorserClient(new Endpoint(url, pem).getChannelBuilder());
     }
@@ -185,4 +186,23 @@ public class Peer {
     }
 
 
+    @Override
+    public void close() throws IOException {
+        this.finalize();
+    }
+
+    @Override
+    public void finalize() {
+        logger.debug("release peer client resource.");
+        try {
+            if (this.endorserClent != null) {
+                this.endorserClent.shutdown();
+            }
+        } catch (InterruptedException e) {
+            logger.debug("Failed to shutdown the OrdererClient");
+        } catch (Exception ex) {
+            logger.debug(String.format(
+                    "Failed to shutdown the OrdererClient. Error:%s", ex));
+        }
+    }
 } // end Peer

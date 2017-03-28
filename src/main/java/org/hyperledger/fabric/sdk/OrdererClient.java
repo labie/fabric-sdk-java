@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 public class OrdererClient {
     private static final Log logger = LogFactory.getLog(OrdererClient.class);
 
+    private boolean isClosed;
+
     private final ManagedChannel channel;
 
 
@@ -46,8 +48,7 @@ public class OrdererClient {
 
 
     public void shutdown() throws InterruptedException {
-
-
+        isClosed = true;
         channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
     }
 
@@ -84,8 +85,9 @@ public class OrdererClient {
 
             @Override
             public void onError(Throwable t) {
-
-                logger.error("broadcase error " + t);
+                if (!isClosed) {
+                    logger.error("broadcase error " + t);
+                }
 
                 finishLatch.countDown();
             }

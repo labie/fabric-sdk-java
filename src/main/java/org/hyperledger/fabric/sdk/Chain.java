@@ -578,6 +578,10 @@ public class Chain {
         return Collections.unmodifiableCollection(orderers);
     }
 
+    public Collection<EventHub> getEventHubs() {
+        return Collections.unmodifiableCollection(eventHubs);
+    }
+
     /**
      * createNewInstance
      *

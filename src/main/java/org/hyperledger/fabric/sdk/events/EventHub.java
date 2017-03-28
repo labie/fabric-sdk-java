@@ -23,13 +23,17 @@ import org.hyperledger.fabric.protos.peer.PeerEvents;
 import org.hyperledger.fabric.sdk.Chain;
 import org.hyperledger.fabric.sdk.Endpoint;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Class to manage fabric events.
  * <p>
  * Feeds Chain event queues with events
  */
 
-public class EventHub {
+public class EventHub implements Closeable {
     private static final Log logger = LogFactory.getLog(EventHub.class);
 
 
@@ -134,7 +138,23 @@ public class EventHub {
         this.eventQue = eventQue;
     }
 
+    public void shutdown() throws InterruptedException {
+        channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+    }
 
+    @Override
+    public void finalize() {
+        try {
+            shutdown();
+        } catch (InterruptedException e) {
+            logger.debug("Failed to shutdown the event hub");
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        finalize();
+    }
 }
 
 

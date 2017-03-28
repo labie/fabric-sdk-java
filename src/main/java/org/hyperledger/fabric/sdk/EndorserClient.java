@@ -45,6 +45,7 @@ public class EndorserClient {
 	}
 
 	public void shutdown() throws InterruptedException {
+		// channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
 		channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
 	}
 

@@ -22,10 +22,13 @@ import org.hyperledger.fabric.sdk.helper.SDKUtil;
 import org.hyperledger.fabric.protos.common.Common;
 import org.hyperledger.fabric.protos.orderer.Ab;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
  * The Orderer class represents a orderer to which SDK sends deploy, invoke, or query requests.
  */
-public class Orderer {
+public class Orderer implements Closeable{
     private static final Log logger = LogFactory.getLog(Orderer.class);
 
     /**
@@ -38,7 +41,7 @@ public class Orderer {
 
     private final String url;
     private final String pem;
-//    private final EndorserClient endorserClent;
+    private final OrdererClient client;
 
     public void setChain(Chain chain) throws InvalidArgumentException {
         if (chain == null) {
@@ -72,6 +75,7 @@ public class Orderer {
 
 
         this.chain = chain;
+        this.client = new OrdererClient(new Endpoint(url, pem).getChannelBuilder());
         // Endpoint ep = new Endpoint(url, pem);
         // Ab.BroadcastMessageOrBuilder bb = Ab.BroadcastMessage.newBuilder();
 
@@ -95,8 +99,7 @@ public class Orderer {
 
     public Ab.BroadcastResponse sendTransaction(Common.Envelope transaction) {
 
-        OrdererClient orderClient = new OrdererClient(new Endpoint(url, pem).getChannelBuilder());
-        return orderClient.sendTransaction(transaction);
+        return this.client.sendTransaction(transaction);
 
     }
 
@@ -106,5 +109,24 @@ public class Orderer {
 
     }
 
+    @Override
+    public void close() throws IOException {
+        this.finalize();
+    }
+
+    @Override
+    public void finalize() {
+        logger.debug("release order client resource.");
+        try {
+            if (this!= null) {
+                this.client.shutdown();
+            }
+        } catch (InterruptedException e) {
+            logger.debug("Failed to shutdown the OrdererClient");
+        } catch (Exception ex) {
+            logger.debug(String.format(
+                    "Failed to shutdown the OrdererClient. Error:%s", ex));
+        }
+    }
 
    } // end Orderer
