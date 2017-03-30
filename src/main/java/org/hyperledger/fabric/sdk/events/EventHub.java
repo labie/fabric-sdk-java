@@ -43,6 +43,7 @@ public class EventHub implements Closeable {
     private boolean connected = false;
     private EventsGrpc.EventsStub events;
     private StreamObserver<PeerEvents.Event> sender;
+    private boolean isClosed;
 
     /**
      * Event queue for all events from eventhubs in the chain
@@ -78,7 +79,9 @@ public class EventHub implements Closeable {
 
             @Override
             public void onError(Throwable t) {
-                logger.error("Error in stream: " + t.getMessage());
+                if (!isClosed) {
+                    logger.error("Error in stream: " + t.getMessage());
+                }
             }
 
             @Override
@@ -139,6 +142,7 @@ public class EventHub implements Closeable {
     }
 
     public void shutdown() throws InterruptedException {
+        isClosed = true;
         channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
     }
 
