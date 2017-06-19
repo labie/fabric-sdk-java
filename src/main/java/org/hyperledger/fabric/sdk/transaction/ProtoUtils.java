@@ -17,8 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Timestamp;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.bouncycastle.asn1.cms.Time;
 import org.hyperledger.fabric.protos.common.Common.ChannelHeader;
 import org.hyperledger.fabric.protos.common.Common.HeaderType;
 import org.hyperledger.fabric.protos.common.Common.SignatureHeader;
@@ -61,11 +63,15 @@ public class ProtoUtils {
 
         }
 
+       long millis = System.currentTimeMillis();
+        Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
+                         .setNanos((int) ((millis % 1000) * 1000000)).build();
         ChannelHeader.Builder ret = ChannelHeader.newBuilder()
                 .setType(type.getNumber())
                 .setVersion(1)
                 .setTxId(txID)
                 .setChannelId(chainID)
+                .setTimestamp(timestamp)
                 .setEpoch(epoch);
         if (null != chaincodeHeaderExtension) {
             ret.setExtension(chaincodeHeaderExtension.toByteString());
